@@ -93,15 +93,25 @@ class BitmapPathfinding04 extends BasicSwing {
 		view.drawEntity( entityAI ); // show entity new position on screen
     }
 	
+	var mouse2X:			Float;
+	var mouse2Y:			Float;
+	
     override public function mouseReleased( e: MouseEvent ) {
 		newPath = false;
     }
     
     override public function mousePressed( e: MouseEvent ) {
-        newPath = true;
+		newPath = true;
     }
     
+	// only gets called when the mouse is not already down ( needed for first render )
 	override public function mouseMoved( e: MouseEvent ) {
+		mouseX = e.getPoint().getX();
+		mouseY = e.getPoint().getY();
+	}
+	
+	// This is what gets called in place of mouseMoved when mouse is down.
+	override public function mouseDragged( e: MouseEvent ) {
 		mouseX = e.getPoint().getX();
 		mouseY = e.getPoint().getY();
 	}
