@@ -1,5 +1,6 @@
 -lib hxDaedalus
 -cp src/
+--remap javax.swing:java.javax.swing
 #-cp ../../../hxPixels_git/src/
 -main BitmapPathfinding04
 -java deploySwing

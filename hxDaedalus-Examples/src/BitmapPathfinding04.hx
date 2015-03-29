@@ -8,297 +8,105 @@ import hxDaedalus.data.Object;
 import hxDaedalus.factories.BitmapObject;
 import hxDaedalus.factories.RectMesh;
 import hxDaedalus.view.SimpleView;
+import hxDaedalus.swing.BasicSwing;
+import haxe.Timer;
+import java.awt.Graphics2D;
+import java.javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.javax.swing.ImageIcon;
+import java.javax.swing.JLabel;
+import java.awt.event.*;
 
-#if flash
-	import flash.display.MovieClip;
-	import flash.display.Stage;
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.display.Bitmap;
-	import flash.display.Sprite;
-	import flash.events.KeyboardEvent;
-	import flash.Lib;
-#elseif java
-	import hxDaedalus.swing.BasicSwing;
-	import haxe.Timer;
-	import java.awt.Graphics2D;
-	import java.javax.imageio.ImageIO;
-	import java.awt.image.BufferedImage;
-	import javax.swing.ImageIcon;
-	import javax.swing.JLabel;
-	import java.awt.event.*;
-#end
+typedef Bmp = BufferedImage;
 
-#if flash
-@:bitmap("assets/galapagosBW.png")
-class GalapagosBW extends flash.display.BitmapData {}
-
-@:bitmap("assets/galapagosColor.png")
-class GalapagosColor extends flash.display.BitmapData {}
-#end
-
-#if flash		typedef Bmp = Bitmap;
-#elseif java	typedef Bmp = BufferedImage;
-#end
-
-class BitmapPathfinding04
-#if flash 		extends Sprite
-#elseif java  	extends BasicSwing
-#end
-{
-	#if java
-	var mouseX:Float;
-	var mouseY:Float;
-	#end
-	
-	var _mesh:  Mesh;
-	var _view:  SimpleView;
-	var _entityAI: EntityAI;
-	var _pathfinder:PathFinder;
-	var _path: Array<Float>;
-	var _pathSampler: LinearPathSampler;
-	var _object: Object;
-	var _bmp:Bmp;
-	var _overlay: Bmp;
-
-    var _newPath:Bool = false;
+class BitmapPathfinding04 extends BasicSwing {
+	var mouseX:			Float;
+	var mouseY:			Float;
+	var mesh:  			Mesh;
+	var view:  			SimpleView;
+	var entityAI: 		EntityAI;
+	var pathfinder:		PathFinder;
+	var path: 			Array<Float>;
+	var pathSampler: 	LinearPathSampler;
+	var object: 		Object;
+	var bmp:			Bmp;
+	var overlay: 		Bmp;
+    var newPath:		Bool = false;
 
 	public static function main(): Void {
-		#if flash 		Lib.current.addChild(new BitmapPathfinding04());
-		#elseif java 	new BitmapPathfinding04();
-		#elseif js		new BitmapPathfinding04();
-		#end	
+		new BitmapPathfinding04();
 	}
 
 	public function new() {
-		
-        #if flash 		super(); 
-		#elseif java	super();
-		#elseif js
-		#end
-		
-		// build a rectangular 2 polygons mesh
-		_mesh = RectMesh.buildRectangle( 1024, 780 );
-		
-		#if flash
-		// show the source bmp
-    #if html5	// load as openfl asset: see DemoFromBitmapPathfinding.xml
-        _bmp = new Bitmap(openfl.Assets.getBitmapData("GalapagosBW"));		
-    #else		
-        _bmp = new Bitmap(new GalapagosBW(0, 0));
-	#end
-		_bmp.x = 0;
-		_bmp.y = 0;
-		
-		// show the image bmp
-    #if html5	// load as openfl asset: see DemoFromBitmapPathfinding.xml
-        _overlay = new Bitmap(openfl.Assets.getBitmapData("GalapagosColor"));
-    #else		
-        _overlay = new Bitmap(new GalapagosColor(0, 0));	
-	#end
-		_overlay.x = 0;
-		_overlay.y = 0;
-		addChild(_overlay);
-		
-		#elseif java
+		super();
+		mesh = RectMesh.buildRectangle( 1024, 780 ); // build a rectangular 2 polygons mesh
 		// load images
 		try {
-			_bmp = ImageIO.read(new java.io.File("../assets/galapagosBW.png"));
-			_overlay = ImageIO.read(new java.io.File("../assets/galapagosColor.png"));
+			bmp = ImageIO.read(new java.io.File( "../assets/galapagosBW.png" ));
+			overlay = ImageIO.read(new java.io.File( "../assets/galapagosColor.png" ));
 		} catch (e:Dynamic) {
 			throw e;
 		}
-		// show the source bmp
-		getContentPane().add(new JLabel(new ImageIcon(_bmp)));
-		
-		// show the image bmp
-		add(new JLabel(new ImageIcon(_overlay)));
-		
-		#elseif js
-		
-		var imgLoader = new ImageLoader()
-		
-		#end
-		
-		#if flash
-		
-			var viewSprite = new Sprite();
-			_view = new SimpleView(viewSprite.graphics);
-			addChild( viewSprite );
-			var bd = _bmp.bitmapData;
-		#elseif java
-		
-			_view = new SimpleView(this);
-			surface.paintFunction = paintFunction;
-			var bd = _bmp;
-			
-		#end
-		
-		// create an object from bitmap
-		_object = BitmapObject.buildFromBmpData( bd, 1.8 );
-		_object.x = 0;
-		_object.y = 0;
+		getContentPane().add( new JLabel( new ImageIcon( bmp ) )); // show the source bmp
+		add(new JLabel(new ImageIcon( overlay ))); // show the image bmp
+		view = new SimpleView( this );
+		surface.paintFunction = paintFunction;
+		var bd = bmp;
+		object = BitmapObject.buildFromBmpData( bd, 1.8 ); // create an object from bitmap
+		object.x = 0;
+		object.y = 0;
 		var s = haxe.Timer.stamp();
-		_mesh.insertObject( _object );
-		//trace("meshInsert: " + (haxe.Timer.stamp() - s));
-		
-		// display result mesh
-		#if flash
-			// draw the mesh
-			_view.drawMesh( _mesh );
-			
-			// stamp it on the overlay bitmap
-			_overlay.bitmapData.draw(viewSprite);
-		#end
-		
-		// we need an entity
-		_entityAI = new EntityAI();
-		
-		// set radius size for your entity
-		_entityAI.radius = 4;
-		
-		// set a position
-		_entityAI.x = 50;
-		_entityAI.y = 50;
-		
-		#if java
-			mouseX = Std.int(_entityAI.x);
-			mouseY = Std.int(_entityAI.y);
-		#end
-		
-		// show entity on screen
-		#if flash
-			_view.drawEntity( _entityAI, false );
-		#end
-		
-		// now configure the pathfinder
-		_pathfinder = new PathFinder();
-		_pathfinder.entity = _entityAI; // set the entity
-		_pathfinder.mesh = _mesh; // set the mesh
-		
-		// we need a vector to store the path
-		_path = new Array<Float>();
-		
-		// then configure the path sampler
-		_pathSampler = new LinearPathSampler();
-		_pathSampler.entity = _entityAI;
-		_pathSampler.samplingDistance = 10;
-		_pathSampler.path = _path;
-		
-		#if flash
-			// click/drag
-			Lib.current.stage.addEventListener(MouseEvent.MOUSE_DOWN, _onMouseDown);
-			Lib.current.stage.addEventListener(MouseEvent.MOUSE_UP, _onMouseUp);
-			
-			// animate
-			Lib.current.stage.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
-			
-			// key presses
-			Lib.current.stage.addEventListener(KeyboardEvent.KEY_DOWN, _onKeyDown);
-		
-			#if openfl
-				var fps = new openfl.display.FPS();
-				Lib.current.stage.addChild(fps);
-			#end
-		#elseif java
-        	var timer = new Timer( Math.floor( 1000/30 ) );
-        	timer.run = _onEnterFrame;
-		#end
+		mesh.insertObject( object );
+		//trace("meshInsert: " + (haxe.Timer.stamp() - s));		
+		entityAI = new EntityAI(); // we need an entity
+		entityAI.radius = 4; // set radius size for your entity
+		entityAI.x = 50; // set a position
+		entityAI.y = 50;
+		mouseX = Std.int( entityAI.x );
+		mouseY = Std.int( entityAI.y );	
+		pathfinder = new PathFinder();// now configure the pathfinder
+		pathfinder.entity = entityAI; // set the entity
+		pathfinder.mesh = mesh; // set the mesh
+		path = new Array<Float>(); // we need a vector to store the path
+		pathSampler = new LinearPathSampler(); // then configure the path sampler
+		pathSampler.entity = entityAI;
+		pathSampler.samplingDistance = 10;
+		pathSampler.path = path;
+        var timer = new Timer( Math.floor( 1000/30 ) );
+        timer.run = onEnterFrame;
 	}
-	
-	#if flash
-    function _onMouseUp( event: MouseEvent ): Void {
-		_newPath = false;
-    }
     
-    function _onMouseDown( event: MouseEvent ): Void {
-        _newPath = true;
-    }
-    
-    function _onEnterFrame( event: Event ): Void {
-		if (_newPath) _view.graphics.clear();
-		
-		if ( _newPath ) {
-			// find path !
-            _pathfinder.findPath( stage.mouseX, stage.mouseY, _path );
-            
-			// show path on screen
-            _view.drawPath( _path );
-            
-			// reset the path sampler to manage new generated path
-            _pathSampler.reset();
-        }
-        
-        // animate !
-        if ( _pathSampler.hasNext ) {
-			// move entity
-            _pathSampler.next();            
-        }
-            
-		// show entity position on screen
-		_view.drawEntity(_entityAI);
-    }
-	
-	function _onKeyDown(event:KeyboardEvent):Void
-	{
-		if (event.keyCode == 27) {  // ESC
-			#if flash
-				flash.system.System.exit(1);
-			#elseif sys
-				Sys.exit(1);
-			#end
-		}
-	}
-	#elseif java
-    
-    function _onEnterFrame():Void {
-		
+    function onEnterFrame(): Void {
         surface.repaint();
     }
     
-    function paintFunction( g: Graphics2D ):Void {
-        _view.refreshGraphics2D( g );
-		g.drawImage(_overlay, null, 0, 0);
-        _view.drawMesh( _mesh );
-        
-		if ( _newPath ) {
-			// find path !
-            _pathfinder.findPath( mouseX, mouseY, _path );
-            
-			// show path on screen
-            _view.drawPath( _path );
-            
-			// reset the path sampler to manage new generated path
-            _pathSampler.reset();
+    function paintFunction( g: Graphics2D ): Void {
+        view.refreshGraphics2D( g );
+		g.drawImage( overlay, null, 0, 0 );
+        view.drawMesh( mesh );
+		if( newPath ){
+            pathfinder.findPath( mouseX, mouseY, path ); // find path !
+            view.drawPath( path );	// show path on screen
+            pathSampler.reset();	// reset the path sampler to manage new generated path
         }
-        
-        // animate !
-        if ( _pathSampler.hasNext ) {
-			// move entity
-            _pathSampler.next();            
-            
-        }
-		// show entity new position on screen
-		_view.drawEntity( _entityAI);
+        if( pathSampler.hasNext ) pathSampler.next(); // animate ! move entity     
+		view.drawEntity( entityAI ); // show entity new position on screen
     }
 	
-    override public function mouseReleased(e:MouseEvent) {
-		_newPath = false;
+    override public function mouseReleased( e: MouseEvent ) {
+		newPath = false;
     }
     
-    override public function mousePressed(e:MouseEvent) {
-        _newPath = true;
+    override public function mousePressed( e: MouseEvent ) {
+        newPath = true;
     }
     
-	override public function mouseMoved(e:MouseEvent) {
+	override public function mouseMoved( e: MouseEvent ) {
 		mouseX = e.getPoint().getX();
 		mouseY = e.getPoint().getY();
 	}
 	
-	override public function keyPressed(e:KeyEvent) {
-		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-			Sys.exit(1);
-		}
+	override public function keyPressed( e: KeyEvent ) {
+		if( e.getKeyCode() == KeyEvent.VK_ESCAPE ) Sys.exit( 1 );
  	}
-	#end
 }

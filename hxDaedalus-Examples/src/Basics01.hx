@@ -5,61 +5,29 @@ import hxDaedalus.data.Object;
 import hxDaedalus.data.Vertex;
 import hxDaedalus.factories.RectMesh;
 import hxDaedalus.view.SimpleView;
+import hxDaedalus.swing.BasicSwing;
+import java.awt.Graphics2D;
+import haxe.Timer;
 
-#if flash
-	import flash.Lib;
-	import flash.display.Sprite;
-	import flash.events.Event;
-	import flash.events.KeyboardEvent;
-#elseif java
-	import hxDaedalus.swing.BasicSwing;
-	import java.awt.Graphics2D;
-	import haxe.Timer;
-#elseif js
-	import hxDaedalus.canvas.BasicCanvas;
-#end
-
-class Basics01
-#if flash 		extends Sprite
-#elseif java	extends BasicSwing
-#end
-{
-    var mesh : Mesh;
-    var view : SimpleView;
-    var object : Object;
+class Basics01 extends BasicSwing {
+    var mesh: 	Mesh;
+    var view: 	SimpleView;
+    var object: Object;
 	
-	#if js var basicCanvas:BasicCanvas; #end
-	
-    public static function main():Void 
-    {
-		#if flash		Lib.current.addChild(new Basics01());
-		#elseif java	new Basics01();
-		#elseif js		new Basics01();
-		#end	
+    public static function main(): Void {
+		new Basics01();	
 	}
 	
     public function new()
     {
-        #if flash 		super(); 
-		#elseif java	super();
-		#elseif js
-		#end
+		super();
 		
         // build a rectangular 2 polygons mesh of 600x400
         mesh = RectMesh.buildRectangle(600, 400);
 		
         // create a viewport
-		#if flash
-			var viewSprite = new Sprite();
-        	view = new SimpleView(viewSprite.graphics);
-        	addChild( viewSprite );
-		#elseif java
-        	view = new SimpleView(this);
-        	surface.paintFunction = paintFunction;
-		#elseif js
-			basicCanvas = new BasicCanvas();
-        	view = new SimpleView(basicCanvas);
-		#end
+        view = new SimpleView(this);
+        surface.paintFunction = paintFunction;
 	
         // SINGLE VERTEX INSERTION / DELETION
         // insert a vertex in mesh at coordinates (550, 50)
@@ -107,43 +75,11 @@ class Basics01
         // if you want to delete that object
         //_mesh.deleteObject(_object);
 	
-		#if flash
-        	// animate
-        	Lib.current.stage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			// key presses
-        	Lib.current.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-		#elseif java
-        	// animate
-        	var timer = new Timer( Math.floor( 1000/60 ) );
-        	timer.run = renderTimer;
-		#elseif js
-        	// animate
-        	basicCanvas.onEnterFrame = onEnterFrame;
-		#end
+        // animate
+        var timer = new Timer( Math.floor( 1000/60 ) );
+        timer.run = renderTimer;
 	}	
 	
-	#if flash
-	function onEnterFrame(event:Event):Void {
-		// objects can be transformed at any time
-		object.rotation += 0.05;
-
-		mesh.updateObjects();  // don't forget to update  
-
-		// render mesh
-		view.drawMesh(mesh, true);
-	}
-	
-	function onKeyDown(event:KeyboardEvent):Void
-	{
-		if (event.keyCode == 27) {	// ESC
-		#if flash
-			flash.system.System.exit(1);
-		#elseif sys
-			Sys.exit(1);
-		#end
-		}
-    }
-	#elseif java
     function renderTimer():Void {
         // objects can be transformed at any time
         object.rotation += 0.05;
@@ -157,15 +93,5 @@ class Basics01
         view.refreshGraphics2D( g );
         view.drawMesh( mesh, true );
     }
-	#elseif js
-    function onEnterFrame():Void {
-        // objects can be transformed at any time
-        object.rotation += 0.05;
-    
-        mesh.updateObjects();  // don't forget to update  
-        // render mesh
-        view.drawMesh(mesh, true);
-    }
-	#end
 
 }	
