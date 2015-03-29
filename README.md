@@ -2,6 +2,7 @@ hxDaedalus-Examples
 ===================
 
 This is the haxe java swing examples repository for the Haxe version of the as3 Daedalus-lib. Currently requires Haxe 3.2 and latest haxelib hxJava.
+( Haxe 3.2 release candidate http://haxe.org/download/version/3.2.0-rc.2/ )
 
 These examples require the current haxe hxDaedalus library, which can be found here:
 https://github.com/Justinfront/hxDaedalus
