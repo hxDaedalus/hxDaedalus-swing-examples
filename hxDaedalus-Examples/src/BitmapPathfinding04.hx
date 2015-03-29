@@ -93,14 +93,11 @@ class BitmapPathfinding04 extends BasicSwing {
 		view.drawEntity( entityAI ); // show entity new position on screen
     }
 	
-	var mouse2X:			Float;
-	var mouse2Y:			Float;
-	
-    override public function mouseReleased( e: MouseEvent ) {
+	override public function mouseReleased( e: MouseEvent ) {
 		newPath = false;
     }
     
-    override public function mousePressed( e: MouseEvent ) {
+	override public function mousePressed( e: MouseEvent ) {
 		newPath = true;
     }
     
