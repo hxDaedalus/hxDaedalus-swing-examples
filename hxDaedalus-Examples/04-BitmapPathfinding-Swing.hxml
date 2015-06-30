@@ -1,4 +1,5 @@
 -lib hxDaedalus
+-lib hxPixels
 -cp src/
 --remap javax.swing:java.javax.swing
 #-cp ../../../hxPixels_git/src/

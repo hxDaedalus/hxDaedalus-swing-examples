@@ -1,0 +1,3 @@
+-cmd haxe 01-Basics-Swing.hxml
+--next
+-cmd haxe 04-BitmapPathfinding-Swing.hxml
