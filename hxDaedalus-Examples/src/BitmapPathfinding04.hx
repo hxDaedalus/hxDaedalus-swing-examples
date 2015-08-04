@@ -8,7 +8,7 @@ import hxDaedalus.data.Object;
 import hxDaedalus.factories.BitmapObject;
 import hxDaedalus.factories.RectMesh;
 import hxDaedalus.view.SimpleView;
-import hxDaedalus.swing.BasicSwing;
+import wings.javaSwing.BasicSwing;
 import haxe.Timer;
 import java.awt.Graphics2D;
 import java.javax.imageio.ImageIO;
@@ -57,13 +57,13 @@ class BitmapPathfinding04 extends BasicSwing {
 		object.y = 0;
 		var s = haxe.Timer.stamp();
 		mesh.insertObject( object );
-		//trace("meshInsert: " + (haxe.Timer.stamp() - s));		
+		//trace("meshInsert: " + (haxe.Timer.stamp() - s));
 		entityAI = new EntityAI(); // we need an entity
 		entityAI.radius = 4; // set radius size for your entity
 		entityAI.x = 50; // set a position
 		entityAI.y = 50;
 		mouseX = Std.int( entityAI.x );
-		mouseY = Std.int( entityAI.y );	
+		mouseY = Std.int( entityAI.y );
 		pathfinder = new PathFinder();// now configure the pathfinder
 		pathfinder.entity = entityAI; // set the entity
 		pathfinder.mesh = mesh; // set the mesh
@@ -75,11 +75,11 @@ class BitmapPathfinding04 extends BasicSwing {
         var timer = new Timer( Math.floor( 1000/30 ) );
         timer.run = onEnterFrame;
 	}
-    
+
     function onEnterFrame(): Void {
         surface.repaint();
     }
-    
+
     function paintFunction( g: Graphics2D ): Void {
         view.refreshGraphics2D( g );
 		g.drawImage( overlay, null, 0, 0 );
@@ -89,30 +89,30 @@ class BitmapPathfinding04 extends BasicSwing {
             view.drawPath( path );	// show path on screen
             pathSampler.reset();	// reset the path sampler to manage new generated path
         }
-        if( pathSampler.hasNext ) pathSampler.next(); // animate ! move entity     
+        if( pathSampler.hasNext ) pathSampler.next(); // animate ! move entity
 		view.drawEntity( entityAI ); // show entity new position on screen
     }
-	
+
 	override public function mouseReleased( e: MouseEvent ) {
 		newPath = false;
     }
-    
+
 	override public function mousePressed( e: MouseEvent ) {
 		newPath = true;
     }
-    
+
 	// only gets called when the mouse is not already down ( needed for first render )
 	override public function mouseMoved( e: MouseEvent ) {
 		mouseX = e.getPoint().getX();
 		mouseY = e.getPoint().getY();
 	}
-	
+
 	// This is what gets called in place of mouseMoved when mouse is down.
 	override public function mouseDragged( e: MouseEvent ) {
 		mouseX = e.getPoint().getX();
 		mouseY = e.getPoint().getY();
 	}
-	
+
 	override public function keyPressed( e: KeyEvent ) {
 		if( e.getKeyCode() == KeyEvent.VK_ESCAPE ) Sys.exit( 1 );
  	}
